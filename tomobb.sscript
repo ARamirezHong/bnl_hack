@@ -4,10 +4,14 @@
 #SBATCH -N 1
 #SBATCH -t 00:15:00
 #DW jobdw capacity=10GB access_mode=striped type=scratch 
+#SBATCH -J quick_tomopy                                                                                                     
+#DW jobdw capacity=20GB access_mode=striped type=scratch  
+#DW stage_in source=/global/cscratch1/sd/lbluque/TestDatasets/20150820_130628_Dleucopodia_10458_pieceA_10x_z30mm.h5 destination=$DW_JOB_STRIPED/20150820_130628_Dleucopodia_10458_pieceA_10x_z30mm.h5 type=file                                         #DW stage_out source=$DW_JOB_STRIPED/outputdir destination=/global/cscratch1/sd/lbluque/OutTestRecons type=directory
 
-mkdir $DW_JOB_STRIPED/inputdir 
+module load python/2.7-anaconda
+source activate bl832
+
 mkdir $DW_JOB_STRIPED/outputdir
 
-cp $SCRATCH/path/to/input/file $DW_JOB_STRIPED/inputdir/
-srun a.out --inputfilename=$DW_JOB_STRIPED/inputdir/filename --outputdir=$DW_JOB_STRIPED/outputdir/  
-cp -r $DW_JOB_STRIPED/outputdir/ $SCRATCH/path/to/output/
+srun -N 1 -- python quick_tomopy.py -i $DW_JOB_STRIPED/20150820_130628_Dleucopodia_10458_pi\
+eceA_10x_z30mm.h5 -o $DW_JOB_STRIPED/outputdir/
