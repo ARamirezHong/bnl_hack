@@ -4,6 +4,5 @@
   * 20150820_162025_Mvesparium_20948-131_pieceA_10x_x00y00.h5
   * 20150925_005755_porcupine_holland_x00y00.h5
   * 20150820_162025_Mvesparium_20948-131_pieceA_10x_x00y01.h5
-  * 20151021_122125_ALS10_RT_243lbs_10x.h5
 
 These can be found on SPOT
