@@ -1,0 +1,19 @@
+#!/bin/bash 
+
+#SBATCH -p debug
+#SBATCH -N 1
+#SBATCH -t 00:15:00
+#DW jobdw capacity=10GB access_mode=striped type=scratch 
+
+module load python/2.7-anaconda
+source activate bl832
+
+mkdir $DW_JOB_STRIPED/inputdir 
+mkdir $DW_JOB_STRIPED/outputdir
+
+H5FILE=/path/to/file
+cp $H5FILE $DW_JOB_STRIPED/
+
+srun -N 1 -n 1 python /path/to/script args --inputfilename=$DW_JOB_STRIPED/inputdir/filename --outputdir=$DW_JOB_STRIPED/outputdir/  
+
+cp -r $DW_JOB_STRIPED/outputdir/ $SCRATCH/path/to/output/
