@@ -1,9 +1,12 @@
-#!/bin/bash
+#!/bin/bash 
 
-#SBATCH -p regular
-#SBATCH -t 00:30:00
+#SBATCH -p realtime
 #SBATCH -N 1
+#SBATCH -t 00:05:00
+#SBATCH -J quick_tomopy 
+#SBATCH -A als
 
-srun -N 1 -n 1 foo
+module load python/2.7-anaconda
+source activate bl832
 
-
+time srun -N 1 -- python quick_tomopy.py -i $IN_PATH -o $OUT_PATH

@@ -36,7 +36,7 @@ def write_als_832h5(rec, file_name, file_data, group_data, out_path, step=1):
     time = datetime.now()
     time_stamp = time.strftime('%Y%m%d_%H%M%S')
     base_name = os.path.split(file_name)[-1].split('.')[0]
-    file_name = (base_name + '-quick-tomopy-' + time_stamp + '.h5')
+    file_name = (base_name + '-fast-tomopy-' + time_stamp + '.h5')
     out_path = os.path.join(out_path, file_name)
     dataset_data = {'date': '', 'dim1': 1, 'dim2': dy, 'dim3': dz, 'name':
                     'sample0', 'title': 'image'}

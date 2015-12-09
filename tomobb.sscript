@@ -1,17 +1,18 @@
 #!/bin/bash 
 
-#SBATCH -p debug
+#SBATCH -p realtime
 #SBATCH -N 1
 #SBATCH -t 00:15:00
-#DW jobdw capacity=10GB access_mode=striped type=scratch 
-#SBATCH -J quick_tomopy                                                                                                     
+#SBATCH -J quick_tomopy 
+#SBATCH -A als
+
 #DW jobdw capacity=20GB access_mode=striped type=scratch  
-#DW stage_in source=/global/cscratch1/sd/lbluque/TestDatasets/20150820_130628_Dleucopodia_10458_pieceA_10x_z30mm.h5 destination=$DW_JOB_STRIPED/20150820_130628_Dleucopodia_10458_pieceA_10x_z30mm.h5 type=file                                         #DW stage_out source=$DW_JOB_STRIPED/outputdir destination=/global/cscratch1/sd/lbluque/OutTestRecons type=directory
+#DW stage_in source=$IN_PATH/$IN_FILE destination=$DW_JOB_STRIPED/$IN_FILE type=file   
+#DW stage_out source=$DW_JOB_STRIPED/outputdir destination=$OUT_FILE type=directory
 
 module load python/2.7-anaconda
 source activate bl832
 
-mkdir $DW_JOB_STRIPED/outputdir
+mdkir $DW_JOB_STRIPED/outputdir
 
-srun -N 1 -- python quick_tomopy.py -i $DW_JOB_STRIPED/20150820_130628_Dleucopodia_10458_pi\
-eceA_10x_z30mm.h5 -o $DW_JOB_STRIPED/outputdir/
+srun -N 1 -- python quick_tomopy.py -i $DW_JOB_STRIPED/$IN_FILE -o $DW_JOB_STRIPED/outputdir/
