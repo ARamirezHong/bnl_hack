@@ -3,7 +3,7 @@
 #SBATCH -p realtime
 #SBATCH -N 1
 #SBATCH -t 00:15:00
-#SBATCH -J quick_tomopy 
+#SBATCH -J fast_tomopy 
 #SBATCH -A als
 
 #DW jobdw capacity=20GB access_mode=striped type=scratch  
@@ -15,4 +15,4 @@ source activate bl832
 
 mdkir $DW_JOB_STRIPED/outputdir
 
-srun -N 1 -- python quick_tomopy.py -i $DW_JOB_STRIPED/$IN_FILE -o $DW_JOB_STRIPED/outputdir/
+srun -N 1 -- python fast_tomopy.py -i $DW_JOB_STRIPED/$IN_FILE -o $DW_JOB_STRIPED/outputdir/
