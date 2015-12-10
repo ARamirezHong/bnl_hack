@@ -9,22 +9,16 @@ import sys
 import os
 import argparse
 import numpy as np
-
 import tomopy
 import h5py
 import logging
+from PIL import Image
 from datetime import datetime
+
 
 logger = logging.getLogger('fast_tomopy')
 logger.setLevel(logging.INFO)
 formatter = logging.Formatter('%(asctime)s %(name)-12s %(levelname)-8s %(message)s')
-fh = logging.FileHandler('fast_tomopy.log')
-fh.setLevel(logging.INFO)
-fh.setFormatter(formatter)
-logger.addHandler(fh)
-ch = logging.StreamHandler(sys.stdout)
-ch.setLevel(logging.ERROR)
-logger.addHandler(ch)
 
 
 def write_als_832h5(rec, file_name, file_data, group_data, out_path, step=1):
@@ -70,6 +64,14 @@ def write_als_832h5(rec, file_name, file_data, group_data, out_path, step=1):
     return
 
 
+def write_thumbnail_stack(rec, out_path):
+    for i in range(rec.shape[0]):
+        name = 'im{0:0={1}d}'.format(i, 4) + '.tiff'
+        name = os.path.join(out_path, name)
+        image = Image.fromarray(rec[i, :, :])
+        image.save(name)
+
+
 def fast_tomo_recon(argv):
     """
     Reconstruct subset slices (sinograms) equally spaced within tomographic
@@ -101,7 +103,15 @@ def fast_tomo_recon(argv):
     parser.add_argument('-rr', '--ring-remove', type=str, help='Ring removal '
                         'method', choices=['Octopus', 'Tomopy-FW', 'Tomopy-T'],
                         default='Tomopy-FW')
+    parser.add_argument('-lf', '--log-file', type=str, help='log file name',
+                        default='fast-tomopy.log')
+
     args = parser.parse_args()
+
+    fh = logging.FileHandler(args.log_file)
+    fh.setLevel(logging.INFO)
+    fh.setFormatter(formatter)
+    logger.addHandler(fh)
 
     if os.path.isdir(args.output) is False:
         raise IOError(2, 'Output directory does not exist', args.output)
@@ -186,8 +196,10 @@ def fast_tomo_recon(argv):
     gdata['ring_removal_method'] = args.ring_remove
     gdata['rfilter'] = args.filter_name
 
-    logger.info('Writing reconstructed data to file')
+    logger.info('Writing reconstructed data to h5 file')
     write_als_832h5(rec, args.input, fdata, gdata, args.output, step)
+    logger.info('Writing reconstruction thumbnails')
+    write_thumbnail_stack(rec, args.output)
 
     return
 
