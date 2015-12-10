@@ -177,7 +177,7 @@ def fast_tomo_recon(argv):
 
     # Write reconstruction data to new hdf5 file
     fdata['stage'] = 'fast-tomopy'
-    fdata['stage_flow'] = '/raw/' + fdata['stage']
+    fdata['stage_flow'] = '/raw/norm/sino/' + fdata['stage']
     fdata['stage_version'] = 'gridrec-1.2.4'
     # WHAT ABOUT uuid ????? Who asigns this???
     gdata['Reconstruction_Type'] = 'tomopy-gridrec'
