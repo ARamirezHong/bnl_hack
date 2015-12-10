@@ -13,13 +13,12 @@ import numpy as np
 import tomopy
 import h5py
 import logging
-from logging import handlers
 from datetime import datetime
 
 logger = logging.getLogger('fast_tomopy')
-logger.setLevel(logging.INFO)
+logger.setLevel(logging.ERROR)
 formatter = logging.Formatter('%(asctime)s %(name)-12s %(levelname)-8s %(message)s')
-fh = handlers.RotatingFileHandler('fast_tomopy.log')
+fh = logging.FileHandler('fast_tomopy.log')
 fh.setLevel(logging.INFO)
 fh.setFormatter(formatter)
 logger.addHandler(fh)
@@ -177,10 +176,11 @@ def fast_tomo_recon(argv):
                                   theta_min=theta_min, rwidth=rwidth)
 
     # Write reconstruction data to new hdf5 file
-    fdata['stage'] = 'tomopy-' + args.algorithm
-    fdata['stage_flow'] = '/raw/norm/sino/' + fdata['stage']
-    # WHAT ABOUT uuid ????? does it stay the same???
-    gdata['Reconstruction_Type'] = fdata['stage']
+    fdata['stage'] = 'fast-tomopy'
+    fdata['stage_flow'] = '/raw/' + fdata['stage']
+    fdata['stage_version'] = 'gridrec-1.2.4'
+    # WHAT ABOUT uuid ????? Who asigns this???
+    gdata['Reconstruction_Type'] = 'tomopy-gridrec'
     gdata['ring_removal_method'] = args.ring_remove
     gdata['rfilter'] = args.filter_name
 
