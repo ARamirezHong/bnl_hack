@@ -16,7 +16,7 @@ import logging
 from datetime import datetime
 
 logger = logging.getLogger('fast_tomopy')
-logger.setLevel(logging.ERROR)
+logger.setLevel(logging.INFO)
 formatter = logging.Formatter('%(asctime)s %(name)-12s %(levelname)-8s %(message)s')
 fh = logging.FileHandler('fast_tomopy.log')
 fh.setLevel(logging.INFO)
@@ -177,9 +177,11 @@ def fast_tomo_recon(argv):
 
     # Write reconstruction data to new hdf5 file
     fdata['stage'] = 'fast-tomopy'
-    fdata['stage_flow'] = '/raw/norm/sino/' + fdata['stage']
-    fdata['stage_version'] = 'gridrec-1.2.4'
+    fdata['stage_flow'] = '/raw/' + fdata['stage']
+    fdata['stage_version'] = 'fast-tomopy-0.1'
     # WHAT ABOUT uuid ????? Who asigns this???
+    del fdata['uuid']  # I'll get rid of it altogether then...
+
     gdata['Reconstruction_Type'] = 'tomopy-gridrec'
     gdata['ring_removal_method'] = args.ring_remove
     gdata['rfilter'] = args.filter_name
