@@ -41,6 +41,7 @@ def write_als_832h5(rec, file_name, file_data, group_data, out_path, step=1):
     dataset_data = {'date': '', 'dim1': 1, 'dim2': dy, 'dim3': dz, 'name':
                     'sample0', 'title': 'image'}
     data = np.empty((1, dy, dz), dtype='float32')
+
     with h5py.File(out_path, 'w') as f:
         # Write file level metadata
         logger.info('Writing output file level metadata')
@@ -103,6 +104,8 @@ def fast_tomo_recon(argv):
                         default='Tomopy-FW')
     args = parser.parse_args()
 
+    if os.path.isdir(args.output) is False:
+        raise IOError(2, 'Output directory does not exist', args.output)
 
     # Read file metadata
     logger.info('Reading input file metadata')
