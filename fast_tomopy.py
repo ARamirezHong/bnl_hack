@@ -14,7 +14,6 @@ import numpy as np
 import tomopy
 import h5py
 import logging
-from PIL import Image
 from datetime import datetime
 
 
@@ -64,14 +63,6 @@ def write_als_832h5(rec, file_name, file_data, group_data, out_path, step=1):
         f.attrs['stage_date'] = time.strftime('%Y-%m-%dT%H%MZ')
 
     return
-
-
-def write_thumbnail_stack(rec, out_path):
-    for i in range(rec.shape[0]):
-        name = 'im{0:0={1}d}'.format(i, 4) + '.tiff'
-        name = os.path.join(out_path, name)
-        image = Image.fromarray(rec[i, :, :])
-        image.save(name)
 
 
 def fast_tomo_recon(argv):
@@ -200,8 +191,6 @@ def fast_tomo_recon(argv):
 
     logger.info('Writing reconstructed data to h5 file')
     write_als_832h5(rec, args.input, fdata, gdata, args.output, step)
-    logger.info('Writing reconstruction thumbnails')
-    write_thumbnail_stack(rec, args.output)
 
     return
 
