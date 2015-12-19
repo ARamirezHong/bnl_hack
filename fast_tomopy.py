@@ -22,21 +22,20 @@ logger.setLevel(logging.INFO)
 formatter = logging.Formatter('%(asctime)s %(name)-12s %(levelname)-8s %(message)s')
 
 
-def write_als_832h5(rec, file_name, file_data, group_data, out_path, step=1):
+def write_als_832h5(rec, input_file_name, file_data, group_data, output_file, step=1):
 
     logger = logging.getLogger('fast_tomopy.write_als_832h5')
 
     dx, dy, dz = rec.shape
-    time = datetime.now()
-    time_stamp = time.strftime('%Y%m%d_%H%M%S')
-    base_name = os.path.split(file_name)[-1].split('.')[0]
-    file_name = (base_name + '-fast-tomopy-' + time_stamp + '.h5')
-    out_path = os.path.join(out_path, file_name)
+
+    # This should really come from the group in the input H5 file and not the name of the H5 file.
+    group_name = os.path.split(input_file_name)[-1].split('.')[0]
+
     dataset_data = {'date': '', 'dim1': 1, 'dim2': dy, 'dim3': dz, 'name':
                     'sample0', 'title': 'image'}
     data = np.empty((1, dy, dz), dtype='float32')
 
-    with h5py.File(out_path, 'w') as f:
+    with h5py.File(output_file, 'w') as f:
         # Write file level metadata
         logger.info('Writing output file level metadata')
         for key in file_data.keys():
@@ -44,8 +43,8 @@ def write_als_832h5(rec, file_name, file_data, group_data, out_path, step=1):
 
         # Create group and write group level metadata
         logger.info('Writing output group level metadata')
-        f.create_group(base_name)
-        g = f[base_name]
+        f.create_group(group_name)
+        g = f[group_name]
         for key in group_data.keys():
             g.attrs.create(key, group_data[key])
 
@@ -53,7 +52,7 @@ def write_als_832h5(rec, file_name, file_data, group_data, out_path, step=1):
         logger.info('Writing reconstructed slices')
         for i in range(dx):
             ind = step*(i + 1)
-            dname = base_name + '_0000_{0:0={1}d}'.format(ind, 4) + '.tif'
+            dname = group_name + '_0000_{0:0={1}d}'.format(ind, 4) + '.tif'
             data[0] = rec[i, :, :]
             g.create_dataset(dname, data=data)
             for key in dataset_data.keys():
@@ -77,8 +76,8 @@ def fast_tomo_recon(argv):
     parser = argparse.ArgumentParser()
     parser.add_argument('-i', '--input', type=str, help='path to input raw '
                         'dataset', required=True)
-    parser.add_argument('-o', '--output', type=str, help='path to output '
-                        'directory', default=os.getcwd())
+    parser.add_argument('-o', '--output-file', type=str, help='full path to h5 output '
+                        'file', default=os.path.join(os.getcwd(), "fast-tomopy.h5"))
     parser.add_argument('-sn', '--sino-num', type=int, help='Number of slices '
                         'to reconstruct', default=5)
     parser.add_argument('-a', '--algorithm', type=str, help='Reconstruction'
@@ -106,8 +105,8 @@ def fast_tomo_recon(argv):
     fh.setFormatter(formatter)
     logger.addHandler(fh)
 
-    if os.path.isdir(args.output) is False:
-        raise IOError(2, 'Output directory does not exist', args.output)
+    if os.path.isdir(os.path.dirname(args.output_file)) is False:
+        raise IOError(2, 'Directory of output file does not exist', args.output_file)
 
     # Read file metadata
     logger.info('Reading input file metadata')
@@ -190,7 +189,7 @@ def fast_tomo_recon(argv):
     gdata['rfilter'] = args.filter_name
 
     logger.info('Writing reconstructed data to h5 file')
-    write_als_832h5(rec, args.input, fdata, gdata, args.output, step)
+    write_als_832h5(rec, args.input, fdata, gdata, args.output_file, step)
 
     return
 
