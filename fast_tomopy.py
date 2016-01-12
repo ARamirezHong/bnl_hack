@@ -153,6 +153,7 @@ def fast_tomo_recon(argv):
     # Pad sinograms with edge values
     npad = int(np.ceil(ray_total*np.sqrt(2)) - ray_total)//2
     tomo = tomopy.pad(tomo, 2, npad=npad, mode='edge')
+    args.center += npad # account for padding
 
     filter_name = np.array(args.filter_name, dtype=(str, 16))
     theta = tomopy.angles(proj_total, 270, 90)
