@@ -15,7 +15,7 @@ import tomopy
 import h5py
 import logging
 from datetime import datetime
-
+import uuid
 
 logger = logging.getLogger('fast_tomopy')
 logger.setLevel(logging.INFO)
@@ -182,8 +182,8 @@ def fast_tomo_recon(argv):
     fdata['stage'] = 'fast-tomopy'
     fdata['stage_flow'] = '/raw/' + fdata['stage']
     fdata['stage_version'] = 'fast-tomopy-0.1'
-    # WHAT ABOUT uuid ????? Who asigns this???
-    del fdata['uuid']  # I'll get rid of it altogether then...
+    # Generate a new uuid based on host ID and current time
+    fdata['uuid'] = str(uuid.uuid1())
 
     gdata['Reconstruction_Type'] = 'tomopy-gridrec'
     gdata['ring_removal_method'] = args.ring_remove
