@@ -22,6 +22,44 @@ logger.setLevel(logging.INFO)
 formatter = logging.Formatter('%(asctime)s %(name)-12s %(levelname)-8s %(message)s')
 
 
+def read_als_832h5_metadata(fname):
+    """
+    Read metadata in ALS 8.3.2 hdf5 dataset files
+
+    :param fname: str, Path to hdf5 file.
+    :return dict: dictionary of metadata items
+    """
+
+    fdata, gdata = {}, {}
+
+    with h5py.File(fname, 'r') as f:
+        fdata = dict(f.attrs)
+        g = _find_dataset_group(f)
+        gdata = dict(g.attrs)
+
+    return fdata, gdata
+
+
+def _find_dataset_group(h5object):
+    """
+    Finds the group name containing the stack of projections datasets within
+    a ALS BL8.3.2 hdf5 file
+    """
+    # Only one root key means only one dataset in BL8.3.2 current format
+    keys = h5object.keys()
+    if len(keys) == 1:
+        if isinstance(h5object[keys[0]], h5py.Group):
+            group_keys = h5object[keys[0]].keys()
+            if isinstance(h5object[keys[0]][group_keys[0]], h5py.Dataset):
+                return h5object[keys[0]]
+            else:
+                return _find_dataset_group(h5object[keys[0]])
+        else:
+            raise Exception('Unable to find dataset group')
+    else:
+        raise Exception('Unable to find dataset group')
+
+
 def write_als_832h5(rec, input_file_name, file_data, group_data, output_file, step=1):
 
     logger = logging.getLogger('fast_tomopy.write_als_832h5')
@@ -110,7 +148,7 @@ def fast_tomo_recon(argv):
 
     # Read file metadata
     logger.info('Reading input file metadata')
-    fdata, gdata = tomopy.read_als_832h5_metadata(args.input)
+    fdata, gdata = read_als_832h5_metadata(args.input)
     proj_total = int(gdata['nangles'])
     last = proj_total - 1
     sino_total = int(gdata['nslices'])
@@ -128,7 +166,7 @@ def fast_tomo_recon(argv):
         logger.info('Reading full first and last projection for COR')
         first_last, flats, darks, floc = tomopy.read_als_832h5(args.input,
                                                                ind_tomo=(0, last))
-        first_last = tomopy.normalize_nf(first_last, flats, darks, floc)
+        first_last = tomopy.normalize(first_last, flats, darks)
         args.center = tomopy.find_center_pc(first_last[0, :, :],
                                             first_last[1, :, :], tol=0.1)
         logger.info('Detected center: %f', args.center)
