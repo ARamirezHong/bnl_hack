@@ -132,7 +132,7 @@ def fast_tomo_recon(argv):
                         default='butterworth')
     parser.add_argument('-rr', '--ring-remove', type=str, help='Ring removal '
                         'method', choices=['Octopus', 'Tomopy-FW', 'Tomopy-T'],
-                        default='Tomopy-FW')
+                        default='Tomopy-T')
     parser.add_argument('-lf', '--log-file', type=str, help='log file name',
                         default='fast-tomopy.log')
 
@@ -198,7 +198,8 @@ def fast_tomo_recon(argv):
 
     logger.info('Reconstructing normalized data')
     # Reconstruct sinograms
-    rec = tomopy.recon(tomo, theta, center=args.center, emission=False,
+    rec = tomopy.minus_log(tomo, out=tomo)
+    rec = tomopy.recon(tomo, theta, center=args.center,
                        algorithm=args.algorithm, filter_name=filter_name)
     rec = tomopy.circ_mask(rec[:, npad:-npad, npad:-npad], 0)
     rec = rec/px_size
