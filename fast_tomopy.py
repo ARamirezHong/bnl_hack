@@ -198,8 +198,8 @@ def fast_tomo_recon(argv):
 
     logger.info('Reconstructing normalized data')
     # Reconstruct sinograms
-    rec = tomopy.minus_log(tomo, out=tomo)
-    rec = tomopy.recon(tomo, theta, center=args.center,
+    # rec = tomopy.minus_log(tomo, out=tomo)
+    rec = tomopy.recon(tomo, theta, center=args.center, emission=False,
                        algorithm=args.algorithm, filter_name=filter_name)
     rec = tomopy.circ_mask(rec[:, npad:-npad, npad:-npad], 0)
     rec = rec/px_size
