@@ -16,7 +16,7 @@ import dxchange as dx
 import h5py
 import logging
 from datetime import datetime
-
+import uuid
 
 logger = logging.getLogger('fast_tomopy')
 logger.setLevel(logging.INFO)
@@ -24,35 +24,35 @@ formatter = logging.Formatter('%(asctime)s %(name)-12s %(levelname)-8s %(message
 
 
 def read_als_832h5_metadata(fname):
-    """                                                                         
-    Read metadata in ALS 8.3.2 hdf5 dataset files                               
-                                                                                
-    :param fname: str, Path to hdf5 file.                                       
-    :return dict: dictionary of metadata items                                  
+    """
+    Read metadata in ALS 8.3.2 hdf5 dataset files
+
+    :param fname: str, Path to hdf5 file.
+    :return dict: dictionary of metadata items
     """
 
     fdata, gdata = {}, {}
 
     with h5py.File(fname, 'r') as f:
-	fdata = dict(f.attrs)
-	g = _find_dataset_group(f)
+        fdata = dict(f.attrs)
+        g = _find_dataset_group(f)
         gdata = dict(g.attrs)
 
     return fdata, gdata
 
 
 def _find_dataset_group(h5object):
-    """                                                                         
-    Finds the group name containing the stack of projections datasets within    
-    a ALS BL8.3.2 hdf5 file                                                     
     """
-    # Only one root key means only one dataset in BL8.3.2 current format        
+    Finds the group name containing the stack of projections datasets within
+    a ALS BL8.3.2 hdf5 file
+    """
+    # Only one root key means only one dataset in BL8.3.2 current format
     keys = h5object.keys()
     if len(keys) == 1:
-	if isinstance(h5object[keys[0]], h5py.Group):
+        if isinstance(h5object[keys[0]], h5py.Group):
             group_keys = h5object[keys[0]].keys()
             if isinstance(h5object[keys[0]][group_keys[0]], h5py.Dataset):
-		return h5object[keys[0]]
+                return h5object[keys[0]]
             else:
                 return _find_dataset_group(h5object[keys[0]])
         else:
@@ -133,7 +133,7 @@ def fast_tomo_recon(argv):
                         default='butterworth')
     parser.add_argument('-rr', '--ring-remove', type=str, help='Ring removal '
                         'method', choices=['Octopus', 'Tomopy-FW', 'Tomopy-T'],
-                        default='Tomopy-FW')
+                        default='Tomopy-T')
     parser.add_argument('-lf', '--log-file', type=str, help='log file name',
                         default='fast-tomopy.log')
 
@@ -178,7 +178,7 @@ def fast_tomo_recon(argv):
     logger.info('Normalizing raw data')
     tomo = tomopy.normalize(tomo, flats, darks)
     tomo = tomopy.minus_log(tomo)
-
+    
     # Remove stripes from sinograms (remove rings)
     logger.info('Preprocessing normalized data')
     if args.ring_remove == 'Tomopy-FW':
@@ -200,8 +200,9 @@ def fast_tomo_recon(argv):
 
     logger.info('Reconstructing normalized data')
     # Reconstruct sinograms
-    rec = tomopy.recon(tomo, theta, center=args.center, algorithm=args.algorithm,
-                       filter_name=filter_name)
+    # rec = tomopy.minus_log(tomo, out=tomo)
+    rec = tomopy.recon(tomo, theta, center=args.center,
+                       algorithm=args.algorithm, filter_name=filter_name)
     rec = tomopy.circ_mask(rec[:, npad:-npad, npad:-npad], 0)
     rec = rec/px_size
 
@@ -222,8 +223,8 @@ def fast_tomo_recon(argv):
     fdata['stage'] = 'fast-tomopy'
     fdata['stage_flow'] = '/raw/' + fdata['stage']
     fdata['stage_version'] = 'fast-tomopy-0.1'
-    # WHAT ABOUT uuid ????? Who asigns this???
-    del fdata['uuid']  # I'll get rid of it altogether then...
+    # Generate a new uuid based on host ID and current time
+    fdata['uuid'] = str(uuid.uuid1())
 
     gdata['Reconstruction_Type'] = 'tomopy-gridrec'
     gdata['ring_removal_method'] = args.ring_remove
