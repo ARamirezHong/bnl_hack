@@ -165,8 +165,8 @@ def fast_tomo_recon(argv):
     # Read full first and last projection to determine center of rotation
     if args.center is None:
         logger.info('Reading full first and last projection for COR')
-        first_last, flats, darks = dx.read_als_832h5(args.input,
-                                                     ind_tomo=(0, last))
+        first_last, flats, darks, foobar = dx.read_als_832h5(args.input,
+                                                             ind_tomo=(0, last))
         first_last = tomopy.normalize(first_last, flats, darks)
         args.center = tomopy.find_center_pc(first_last[0, :, :],
                                             first_last[1, :, :], tol=0.1)
@@ -174,7 +174,7 @@ def fast_tomo_recon(argv):
 
     # Read and normalize raw sinograms
     logger.info('Reading raw data')
-    tomo, flats, darks = dx.read_als_832h5(args.input, sino=sino)
+    tomo, flats, darks, foobar = dx.read_als_832h5(args.input, sino=sino)
     logger.info('Normalizing raw data')
     tomo = tomopy.normalize(tomo, flats, darks)
     tomo = tomopy.minus_log(tomo)
